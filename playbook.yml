@@ -50,12 +50,6 @@
             executable: /bin/bash
         when:
             - os_check.stdout | regex_search("CentOS Linux 8")
-
-    # -   name: Install Requirements - CentOS 8
-    #     shell: rvm requirements
-    #     when:
-    #         - os_check.stdout | regex_search("CentOS Linux 8")
-
     
     -   name: Install rails
         shell: gem install rails
