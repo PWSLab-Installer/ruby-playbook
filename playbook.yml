@@ -1,0 +1,65 @@
+- hosts: localhost
+
+  connection: local
+
+  vars:
+    # ruby_install_gems: 
+    #     - rails
+    # ruby_install_gems_user: root
+  tasks:
+      
+    -   name: Check the version of OS
+        command: hostnamectl
+        register: os_check
+        ignore_errors: yes 
+
+    -   name: Install Role Ruby
+        local_action: command ansible-galaxy install -f geerlingguy.ruby
+
+    -   name: Applying role Ruby
+        command: mv ~/.ansible/roles/geerlingguy.ruby ~/.ansible/roles/pwslab.ruby
+        ignore_errors: yes
+
+    -   name: Installing Ruby
+        include_role:
+            name: pwslab.ruby
+        vars:
+            ruby_install_from_source: true
+        when:
+            - os_check.stdout | regex_search("Ubuntu") or os_check.stdout | regex_search("CentOS Linux 7")
+
+    -   name: Installing Ruby
+        include_role:
+            name: pwslab.ruby
+        when:
+            - os_check.stdout | regex_search("CentOS Linux 8")
+
+    -   name: Add Key for Rails - CentOS 8
+        shell: gpg2 --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+        when:
+            - os_check.stdout | regex_search("CentOS Linux 8")
+        
+    -   name: Install RVM - CentOS 8
+        shell: curl -sSL https://get.rvm.io | bash -s stable
+        when:
+            - os_check.stdout | regex_search("CentOS Linux 8")
+
+    -   name: Sourcing - CentOS 8
+        shell: source /etc/profile.d/rvm.sh && rvm requirements
+        args:
+            executable: /bin/bash
+        when:
+            - os_check.stdout | regex_search("CentOS Linux 8")
+
+    # -   name: Install Requirements - CentOS 8
+    #     shell: rvm requirements
+    #     when:
+    #         - os_check.stdout | regex_search("CentOS Linux 8")
+
+    
+    -   name: Install rails
+        shell: gem install rails
+
+        
+
+    
